@@ -3,29 +3,30 @@ const {authors,books} = require("./data")
 
 
 const typeDefs = gql`
-    type Authors{
+    type Author{
     id:ID
     name:String
     surname:String
     age:Int
-    books:[Books]
+    books(filter:String):[Book]
     }
 
 
 
- type Books {
+ type Book {
     id: ID
     title: String
-    author: Authors
+    author: Author
+    author_id: String!
     score: Float
     isPublished: Boolean
     }
 
  type Query {
-    books: [Books]
-    book(id:ID): Books
-    authors:[Authors]
-    author(id:ID): Authors
+    books: [Book]
+    book(id:ID): Book
+    authors:[Author]
+    author(id:ID): Author
  }
 
 `;
@@ -42,6 +43,21 @@ const resolvers = {
             const data = authors.find((author)=>(author.id)===args.id);
             return data 
         },
+    },
+    Book: {
+        author:(parent,args) => {
+            return authors.find((author)=>author.id===parent.author_id)
+        }
+    },
+    Author: {
+        books:(parent,args) => {
+            if(args.filter){return books.filter((book)=>book.author_id===parent.id && book.title.toLowerCase().startsWith(args.filter.toLowerCase()))}
+            else {
+                return books.filter((book)=>book.author_id===parent.id)
+            }
+            
+        }
+
     }
  
 };
